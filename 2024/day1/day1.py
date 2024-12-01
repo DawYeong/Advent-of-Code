@@ -1,3 +1,6 @@
+# https://adventofcode.com/2024/day/1
+
+
 def day1_file_read(filename):
     with open(filename, "r") as file:
         data = file.read().split("\n")
