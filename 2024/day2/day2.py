@@ -40,19 +40,6 @@ def day2_part1(filename):
 def day2_part2(filename):
     reports = day2_file_read(filename)
 
-    def is_level_safe(a, b, prev_dir):
-        distance = a - b
-        print(a, b)
-
-        if not (1 <= abs(distance) <= 3):
-            return False, None, 1
-        
-        next_dir = distance > 0
-        if (prev_dir != None and prev_dir != next_dir):
-            return False, None, 2
-        
-        return True, next_dir, 0
-
     def check_report(report):
         prev_dir = None
 
