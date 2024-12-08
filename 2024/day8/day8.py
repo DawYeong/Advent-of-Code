@@ -52,11 +52,11 @@ def compute_antinodes(pos1, pos2):
     return antinodes
 
 
-def check_pos_in_bounds(bound_x, bound_y, pos):
+def check_pos_in_bounds(bound_y, bound_x, pos):
     return 0 <= pos[0] < bound_y and 0 <= pos[1] < bound_x
 
 
-def get_antinodes(bound_x, bound_y, frequencies):
+def get_antinodes(bound_y, bound_x, frequencies):
     antinode_positions = set()
     for positions in frequencies.values():
         if len(positions) < 2:
@@ -67,7 +67,7 @@ def get_antinodes(bound_x, bound_y, frequencies):
                 antinodes = compute_antinodes(positions[i], positions[j])
 
                 for antinode in antinodes:
-                    if check_pos_in_bounds(bound_x, bound_y, antinode):
+                    if check_pos_in_bounds(bound_y, bound_x, antinode):
                         antinode_positions.add(antinode)
 
     return antinode_positions
@@ -83,5 +83,57 @@ def day8_part_1(filename):
     print(f"Day 8 part 1 {os.path.basename(filename)} results: {results}")
 
 
+# add every point on the line (including pos1, pos2) instead of just 2
+def compute_antinodes_2(bound_y, bound_x, pos1, pos2):
+    slope = (pos1[0] - pos2[0], pos1[1] - pos2[1])
+    antinodes = [pos1]
+
+    dir = 0
+    curr_pos = pos1
+    while dir != 2:
+        antinode_pos = (
+            add_tuples(curr_pos, slope) if dir == 0 else sub_tuples(curr_pos, slope)
+        )
+
+        if not check_pos_in_bounds(bound_y, bound_x, antinode_pos):
+            dir += 1
+            curr_pos = pos1
+            continue
+
+        antinodes.append(antinode_pos)
+        curr_pos = antinode_pos
+
+    return antinodes
+
+
+def get_antinodes_2(bound_y, bound_x, frequencies):
+    antinode_positions = set()
+    for positions in frequencies.values():
+        if len(positions) < 2:
+            continue
+
+        for i in range(len(positions) - 1):
+            for j in range(i + 1, len(positions)):
+                antinodes = compute_antinodes_2(
+                    bound_y, bound_x, positions[i], positions[j]
+                )
+                antinode_positions.update(antinodes)
+
+    return antinode_positions
+
+
+def day8_part_2(filename):
+    graph = day8_file_read(filename)
+    frequencies = get_frequencies(graph)
+
+    antinodes = get_antinodes_2(len(graph), len(graph[0]), frequencies)
+    results = len(antinodes)
+
+    print(f"Day 8 part 2 {os.path.basename(filename)} results: {results}")
+
+
 day8_part_1(f"{WORKING_DIR}/sample.txt")
 day8_part_1(f"{WORKING_DIR}/input.txt")
+
+day8_part_2(f"{WORKING_DIR}/sample.txt")
+day8_part_2(f"{WORKING_DIR}/input.txt")
