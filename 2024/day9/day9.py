@@ -65,5 +65,73 @@ def day9_part_1(filename):
     print(f"Day 9 part 1 {os.path.basename(filename)} results: {results}")
 
 
+# rewrite file_read ... data structure is not great, hard to work with
+def part_2_file_read(filename):
+    with open(filename, "r") as file:
+        data = file.read()
+
+    blocks = [int(el) for el in data]
+
+    filesystem = []
+    for idx, block in enumerate(blocks):
+        key = None if idx % 2 else idx // 2
+
+        filesystem.append([key, block])
+
+    return filesystem
+
+
+def part_2_transform(filesystem):
+    return [[*value, key] for key, value in filesystem.items()]
+
+
+def day_9_part_2(filename):
+    file_system = part_2_file_read(filename)
+
+    current_block = len(file_system)
+    while current_block > 0:
+        current_block -= 1
+        block = file_system[current_block]
+
+        if block[0] is None:
+            # empty block move to next block
+            continue
+
+        # find empty block of suitable size
+        for i in range(current_block):
+            check_block = file_system[i]
+            if check_block[0] is not None or check_block[1] < block[1]:
+                continue
+
+            # remove from file_system
+            if block[1] == check_block[1]:
+                # replace block
+                file_system[i][0] = block[0]
+                file_system[current_block][0] = None
+            else:
+                file_system[i][1] -= block[1]
+                # slot block
+                file_system.insert(i, block.copy())
+                file_system[current_block + 1][0] = None
+            break
+
+    results = 0
+    counter = 0
+    for block in file_system:
+        key = block[0]
+        length = block[1]
+        if key is None:
+            counter += length
+        else:
+            for _ in range(length):
+                results += counter * key
+                counter += 1
+
+    print(f"Day 9 part 2 {os.path.basename(filename)} results: {results}")
+
+
 day9_part_1(f"{WORKING_DIR}/sample.txt")
 day9_part_1(f"{WORKING_DIR}/input.txt")
+
+day_9_part_2(f"{WORKING_DIR}/sample.txt")
+day_9_part_2(f"{WORKING_DIR}/input.txt")
