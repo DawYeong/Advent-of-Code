@@ -58,7 +58,7 @@ def day9_part_1(filename):
     results = 0
     idx = 0
     for reallocation in space_reallocation:
-        for i in range(reallocation[1]):
+        for _ in range(reallocation[1]):
             results += idx * reallocation[0]
             idx += 1
 
