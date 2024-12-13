@@ -1,9 +1,12 @@
 # https://adventofcode.com/2024/day/12
 
+import os
 from collections import defaultdict
 
+if os.path.dirname(__file__):
+    os.chdir(os.path.dirname(__file__))
 
-DIRECTIONS = {(-1, 0), (1, 0), (0, -1), (0, 1)}
+DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
 
 def day12_file_read(filename):
@@ -78,5 +81,77 @@ def day12_part_1(filename):
     print(f"Day 12 part 1 {filename} results: {results}")
 
 
+def graph_item(graph, pos):
+    if is_in_bounds(graph, pos):
+        return graph[pos[0]][pos[1]]
+    else:
+        return None
+
+
+def calculate_region_cost_2(graph, region, key):
+    visited = set()
+
+    def traverse(visited_key, key_check):
+        # to determine a side => we keep moving horizontally/vertically and checking "below" us
+        # this is traversing from the neighbor's POV
+        work_list = [visited_key]
+        dir = DIRECTIONS[visited_key[2]]
+        check_dir = tuple([x * -1 for x in DIRECTIONS[visited_key[2]]])
+        MOVE_DIRECTIONS = [(dir[1], dir[0]), (check_dir[1], check_dir[0])]
+
+        while work_list:
+            item = work_list.pop()
+
+            if item in visited:
+                continue
+
+            visited.add(item)
+
+            for move_dir in MOVE_DIRECTIONS:
+                new_pos = (item[0] + move_dir[0], item[1] + move_dir[1])
+                check_pos = (new_pos[0] + check_dir[0], new_pos[1] + check_dir[1])
+
+                if (
+                    graph_item(graph, check_pos) == key_check
+                    and graph_item(graph, new_pos) != key_check
+                ):
+                    new_item = new_pos + (idx,)
+                    work_list.append(new_item)
+
+    sides = 0
+    for pos in region:
+        # check directions:
+        for idx, dir in enumerate(DIRECTIONS):
+            new_pos = (pos[0] + dir[0], pos[1] + dir[1])
+
+            if not is_in_bounds(graph, new_pos) or graph[new_pos[0]][new_pos[1]] != key:
+                visited_key = new_pos + (idx,)
+
+                if visited_key in visited:
+                    continue
+
+                # new side
+                sides += 1
+                traverse(visited_key, key)
+
+    return sides * len(region)
+
+
+def day12_part_2(filename):
+    graph = day12_file_read(filename)
+
+    key_regions_map = get_regions(graph)
+
+    results = 0
+    for key, regions in key_regions_map.items():
+        for region in regions:
+            results += calculate_region_cost_2(graph, region, key)
+
+    print(f"Day 12 part 2 {filename} results: {results}")
+
+
 day12_part_1("sample.txt")
 day12_part_1("input.txt")
+
+day12_part_2("sample.txt")
+day12_part_2("input.txt")
