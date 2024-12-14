@@ -1,8 +1,6 @@
 # https://adventofcode.com/2024/day/13
 
-from collections import defaultdict
 from dataclasses import dataclass
-import math
 import re
 import os
 from typing import Tuple, List
@@ -10,7 +8,8 @@ from typing import Tuple, List
 if os.path.dirname(__file__):
     os.chdir(os.path.dirname(__file__))
 
-COSTS = [3, 1]
+
+OFFSET = 10000000000000
 
 
 @dataclass
@@ -19,7 +18,7 @@ class Machine:
     buttons: List[Tuple[int, int]]
 
 
-def day13_file_read(filename):
+def day13_file_read(filename, part_2=False):
     with open(filename, "r") as file:
         data = file.read()
 
@@ -36,46 +35,51 @@ def day13_file_read(filename):
             filtered_section = re.sub(reg, "", section[i])
             value_list.append(tuple([int(el) for el in filtered_section.split(",")]))
 
-        machines.append(Machine(prize=value_list[2], buttons=value_list[:2]))
+        machines.append(
+            Machine(
+                prize=(
+                    value_list[2][0] + (OFFSET if part_2 else 0),
+                    value_list[2][1] + (OFFSET if part_2 else 0),
+                ),
+                buttons=value_list[:2],
+            )
+        )
 
     return machines
 
 
-def is_key_valid(key, prize):
-    return 0 <= key[0] <= prize[0] and 0 <= key[1] <= prize[1]
-
-
 def calculate_min_tokens(machine: Machine):
-    cache = defaultdict(lambda: math.inf)
+    """
+    Linear optimization problem:
 
-    work_list = [(0, 0, 0, 0, 0)]
+    min 3*A + B
+    constraints:
+    But.X * A + But.X * B = Prize.X
+    But.Y * A + But.Y * B = Prize.Y
 
-    while work_list:
-        item = work_list.pop()
-        key = (item[0], item[1])
+    Find point of intersection
+    """
+    det = (
+        machine.buttons[0][0] * machine.buttons[1][1]
+        - machine.buttons[1][0] * machine.buttons[0][1]
+    )
+    if det == 0:
+        return None
 
-        if not is_key_valid(key, machine.prize) or item[2] > 100 or item[3] > 100:
-            continue
+    A = (
+        machine.prize[0] * machine.buttons[1][1]
+        - machine.prize[1] * machine.buttons[1][0]
+    ) / det
 
-        if cache[key] <= item[4]:
-            continue
+    B = (
+        machine.prize[1] * machine.buttons[0][0]
+        - machine.prize[0] * machine.buttons[0][1]
+    ) / det
 
-        cache[key] = item[4]
-
-        # press buttons
-        for i in range(len(COSTS)):
-            machine_button = machine.buttons[i]
-            new_item = (
-                item[0] + machine_button[0],
-                item[1] + machine_button[1],
-                item[2] + 1 if i % 2 == 0 else 0,
-                item[3] + 1 if i % 2 else 0,
-                item[4] + COSTS[i],
-            )
-
-            work_list.append(new_item)
-
-    return cache[machine.prize]
+    if int(A) == A and int(B) == B:
+        return int(A) * 3 + int(B) * 1
+    else:
+        return None
 
 
 def day13_part_1(filename):
@@ -84,11 +88,26 @@ def day13_part_1(filename):
     results = 0
     for machine in machines:
         tokens = calculate_min_tokens(machine)
-        if tokens != math.inf:
+        if tokens:
             results += tokens
 
     print(f"Day 13 part 1 {filename} results: {results}")
 
 
+def day13_part_2(filename):
+    machines = day13_file_read(filename, True)
+
+    results = 0
+    for machine in machines:
+        tokens = calculate_min_tokens(machine)
+        if tokens:
+            results += tokens
+
+    print(f"Day 13 part 2 {filename} results: {results}")
+
+
 day13_part_1("sample.txt")
 day13_part_1("input.txt")
+
+day13_part_2("sample.txt")
+day13_part_2("input.txt")
