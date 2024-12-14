@@ -76,6 +76,7 @@ def calculate_min_tokens(machine: Machine):
         - machine.prize[0] * machine.buttons[0][1]
     ) / det
 
+    # a point is valid only if it has integers
     if int(A) == A and int(B) == B:
         return int(A) * 3 + int(B) * 1
     else:
