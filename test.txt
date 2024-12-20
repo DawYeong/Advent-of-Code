@@ -1,0 +1,5 @@
+Day 17 part 1 sample.txt results: 4,6,3,5,6,3,5,2,1,0
+Day 17 part 1 sample2.txt results: 5,7,3,0
+Day 17 part 1 input.txt results: 6,5,4,7,1,6,0,3,1
+Day 17 part 2 sample2.txt results: 117440
+Day 17 part 2 input.txt results: 106086382266778
