@@ -93,32 +93,52 @@ def traverse(graph: Graph) -> dict[tuple[int, int], int]:
     return time_map
 
 
-def calculate_cheat(time_map: dict[tuple[int, int], int], min_time_save):
-    check_dir = [tuple([el * 2 for el in dir]) for dir in DIRECTIONS]
+def get_manhattan_dist_map(
+    positions: list[tuple[int, int]]
+) -> dict[tuple[int, int], list[tuple[tuple[int, int], int]]]:
+    manhattan_dist_map = defaultdict(list)
+
+    for i in range(len(positions) - 1):
+        for j in range(i, len(positions)):
+            dist = abs(positions[i][0] - positions[j][0]) + abs(
+                positions[i][1] - positions[j][1]
+            )
+            manhattan_dist_map[positions[i]].append((positions[j], dist))
+            manhattan_dist_map[positions[j]].append((positions[i], dist))
+
+    return manhattan_dist_map
+
+
+def calculate_cheat(
+    time_map: dict[tuple[int, int], int],
+    dist_map: dict[tuple[int, int], list[tuple[tuple[int, int], int]]],
+    min_time_save: int,
+    max_cheat_time: int = 2,
+):
     time_save_map = defaultdict(int)
-
     for pos, time in time_map.items():
-        for dir in check_dir:
-            check_pos = add_tuples([pos, dir])
-
-            if check_pos in time_map:
-                # calculate possible time saving
-                time_save = time_map[check_pos] - time - 2
-
-                if time_save >= min_time_save:
-                    time_save_map[time_save] += 1
+        pos_in_distance = [el for el in dist_map[pos] if el[1] <= max_cheat_time]
+        for new_pos, cheat_time in pos_in_distance:
+            time_save = time_map[new_pos] - time - cheat_time
+            if time_save >= min_time_save:
+                time_save_map[time_save] += 1
 
     return time_save_map
 
 
-def day20_part_1(filename: str, min_time_save: int = 1):
+def day20(filename: str, min_time_save: int = 1):
     graph = day20_file_read(filename)
     time_map = traverse(graph)
-    time_save_map = calculate_cheat(time_map, min_time_save)
-    results = sum(time_save_map.values())
+    manhattan_dist_map = get_manhattan_dist_map(list(time_map.keys()))
+    time_save_map_1 = calculate_cheat(time_map, manhattan_dist_map, min_time_save)
+    results_1 = sum(time_save_map_1.values())
 
-    print(f"Day 20 part 1 {filename} results: {results}")
+    print(f"Day 20 part 1 {filename} results: {results_1}")
+
+    time_save_map_2 = calculate_cheat(time_map, manhattan_dist_map, min_time_save, 20)
+    results_2 = sum(time_save_map_2.values())
+    print(f"Day 20 part 2 {filename} results: {results_2}")
 
 
-day20_part_1("sample.txt")
-day20_part_1("input.txt", 100)
+day20("sample.txt", 50)
+day20("input.txt", 100)
