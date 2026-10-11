@@ -16,7 +16,7 @@ def day2_file_read(filename):
 def day2_part_1(filename):
     data = day2_file_read(filename)
     print(f"DATA: {data}")
-    # Process the data for part 1
+    # Process the data
     ranges = []
     for row in data:
         print(f"row: {row}")
@@ -46,10 +46,36 @@ def day2_part_1(filename):
 
     
     print(f"Day 2 part 1 {filename} results: {invalid_sum}")
-        
+
+def day2_part_2(filename, max_length = None):
+    data = day2_file_read(filename)
+    print(f"DATA: {data}")
+
+    invalid_sum = 0
+    for row in data:
+        print(row)
+        seen = set()
+        for i in range(len(row[1]) or max_length, len(row[1])//2, -1):
+            curr = int(pow(10, len(row[1])-i))
+            for j in range(i, 1, -1):
+                while(True):
+                    test_num = int(str(curr)*j)
+                    if test_num > int(row[1]):
+                        break
+
+                    if test_num >= int(row[0]) and test_num not in seen:
+                        print(test_num)
+                        seen.add(test_num)
+                        invalid_sum += test_num
+                    
+                    curr += 1
+    
+    print(f"Day 2 part 2 {filename} results: {invalid_sum}")
 
 
 # day2_part_1("test.txt")
 # day2_part_1("sample.txt")
-day2_part_1("input.txt")
+# day2_part_1("input.txt")
 
+day2_part_2("sample.txt")
+day2_part_2("input.txt")
