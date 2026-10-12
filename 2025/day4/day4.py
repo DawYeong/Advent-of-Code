@@ -55,6 +55,42 @@ def day4_part_1(filename):
     print(f'Day 4 part 1 {filename} results: {can_access}')
             
 
+def day4_part_2(filename):
+    paper_rolls, max_row, max_col = day4_file_read(filename)
 
-day4_part_1("sample.txt")
-day4_part_1("input.txt")
+    removed = 0
+    while paper_rolls:
+        remove = set()
+        for roll in paper_rolls:
+            num_in_range = 0
+            for check in check_locs:
+                loc_check = tuple(x + y for x, y in zip(roll, check))
+
+                if loc_check[0] < 0 or loc_check[1] < 0 or loc_check[0] == max_row or loc_check[1] == max_col:
+                    # out of bounds
+                    continue
+
+                if loc_check in paper_rolls:
+                    num_in_range += 1
+                
+                if num_in_range == 4:
+                    # no need to process other directions
+                    break
+
+            if num_in_range != 4:
+                # remove paper roll
+                remove.add(roll)
+
+        if not remove:
+            break
+
+        paper_rolls = paper_rolls.difference(remove)
+        removed += len(remove)
+
+    print(f'Day 4 part 2 {filename} results: {removed}')
+
+# day4_part_1("sample.txt")
+# day4_part_1("input.txt")
+
+day4_part_2("sample.txt")
+day4_part_2("input.txt")
