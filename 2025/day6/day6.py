@@ -6,25 +6,14 @@ import operator
 if os.path.dirname(__file__):
     os.chdir(os.path.dirname(__file__))
 
-def day6_file_read(filename):
+def day6_part_1_file_read(filename):
     with open(filename, 'r') as file:
         data = file.read()
 
     processed = [[int(r) if r.isdigit() else r for r in row.split()] for row in data.split('\n')]
 
-    return processed[:-1], processed[-1]
+    return np.array(processed[:-1]).T, processed[-1]
 
-def day6_part_1(filename):
-    nums, ops = day6_file_read(filename)
-    
-    total_sum = sum(
-        [
-            reduce(operator.add if ops[idx] == '+' else operator.mul, col) 
-            for idx, col in enumerate(zip(*nums))
-        ]
-    )
-
-    print(f"Day 6 part 1 {filename} results: {total_sum}")
     
 def day6_part_2_file_read(filename):
     with open(filename, 'r') as file:
@@ -58,20 +47,27 @@ def day6_part_2_file_read(filename):
     return final_nums, ops    
 
 
-def day6_part_2(filename):
-    nums, ops = day6_part_2_file_read(filename)
+def day6(filename, read_func, part):
+    nums, ops = read_func(filename)
     total_sum = sum(
-            [
-                reduce(operator.add if ops[idx] == '+' else operator.mul, row) 
-                for idx, row in enumerate(nums)
-            ]
+                [
+                    reduce(operator.add if ops[idx] == '+' else operator.mul, row) 
+                    for idx, row in enumerate(nums)
+                ]
         )
 
-    print(f"Day 6 part 2 {filename} results: {total_sum}")
+    print(f"Day 6 part {part} {filename} results: {total_sum}")
+
+
+def day6_part_1(filename):
+    day6(filename, day6_part_1_file_read, 1)
+
+def day6_part_2(filename):
+    day6(filename, day6_part_2_file_read, 2)
     
 
-# day6_part_1("sample.txt")
-# day6_part_1("input.txt")
+day6_part_1("sample.txt")
+day6_part_1("input.txt")
 
 day6_part_2("sample.txt")
 day6_part_2("input.txt")
