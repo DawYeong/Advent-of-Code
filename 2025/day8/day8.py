@@ -68,7 +68,47 @@ def day8_part_1(filename, connections):
 
     print(f"Day 8 part 1 {filename} results: {three_largest}")
 
+def day8_part_2(filename):
+    coords = day8_file_read(filename)
+
+    nodes = set(range(0, len(coords)))
+    pairs = list(combinations(nodes, 2))
+    distances = []
+    for i, j in pairs:  
+        dist = calculate_distance(coords[i], coords[j])
+        distances.append((dist, i, j))
 
 
-day8_part_1("sample.txt", 10)
-day8_part_1("input.txt", 1000)
+    sorted_distances = sorted(distances, key=lambda x: x[0])
+    make_sets = list({i} for i in nodes)
+
+    def find_set(u):
+        for idx, s in enumerate(make_sets):
+            if u in s:
+                return s, idx
+
+    # kruskals algorithm -> we will build the MST using the shortest edges
+    # essentially we are connecting shortest length connections until the graph is connected, noting the final connection
+    ans = 0
+    for edge in sorted_distances:
+        _, u, v = edge
+        set_u, idx_u = find_set(u)
+        set_v, idx_v = find_set(v)
+        if set_u != set_v:
+            # nodes in different sets merge them
+            make_sets[idx_u] = set_u | set_v
+            del make_sets[idx_v]
+
+            if len(make_sets) == 1:
+                # only one set that means we found the last pair, note the pairs
+                ans = coords[u][0] * coords[v][0]
+                break
+
+    print(f"Day 8 part 2 {filename} results: {ans}")
+
+
+# day8_part_1("sample.txt", 10)
+# day8_part_1("input.txt", 1000)
+
+day8_part_2("sample.txt")
+day8_part_2("input.txt")
