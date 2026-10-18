@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import lru_cache
 import os
 
 if os.path.dirname(__file__):
@@ -17,7 +18,7 @@ def day11_file_read(filename):
     return graph
 
 
-def get_all_paths_from_source(graph, source, destination):
+def get_all_paths_from_source_part_1(graph, source, destination):
     result = []
 
     def dfs(node, path):
@@ -32,13 +33,44 @@ def get_all_paths_from_source(graph, source, destination):
     dfs(source, [source])
     return result
 
+def get_all_paths_from_source_part_2(graph, source, destination):
+    @lru_cache(maxsize=None)
+    def dfs(node, seen_fft, seen_dac):
+        if node == destination:
+            if seen_fft and seen_dac:
+                return 1
+            return 0
+
+        total = 0
+        for child in graph[node]:
+            next_fft = seen_fft | (child == 'fft')
+            next_dac = seen_dac | (child == 'dac')
+            total += dfs(child, next_fft, next_dac)
+
+        return total
+
+    return dfs(source, False, False)
+
+
+
 def day11_part_1(filename):
     graph = day11_file_read(filename)
 
-    all_paths = get_all_paths_from_source(graph, "you", "out")
+    all_paths = get_all_paths_from_source_part_1(graph, "you", "out")
 
     print(f"Day 11 part 1 {filename} results: {len(all_paths)}")
 
 
-day11_part_1("sample.txt")
-day11_part_1("input.txt")
+def day11_part_2(filename):
+    graph = day11_file_read(filename)
+    
+    total = get_all_paths_from_source_part_2(graph, "svr", "out")
+
+    print(f"Day 11 part 2 {filename} results: {total}")
+
+
+# day11_part_1("sample.txt")
+# day11_part_1("input.txt")
+
+day11_part_2("sample2.txt")
+day11_part_2("input.txt")
